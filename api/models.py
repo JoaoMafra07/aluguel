@@ -16,7 +16,7 @@ class Usuario(models.Model):
 
 class Imovel(models.Model):
     STATUS_CHOICES = [
-        ('DISPONIVEL', 'Disponivel')
+        ('DISPONIVEL', 'Disponivel'),
         ('ALUGADO', 'Alugado')
     ]
 
