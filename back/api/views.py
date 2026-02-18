@@ -271,11 +271,14 @@ class UsuarioViewSet(ModelViewSet):
 class ImovelViewSet(ModelViewSet):
     queryset = Imovel.objects.all()
     serializer_class = ImovelSerializer
+    permission_classes = [IsAuthenticated]
 
 class ContratoViewSet(ModelViewSet):
     queryset = Contrato.objects.all()
     serializer_class = ContratoSerializer
+    permission_classes = [IsAuthenticated]
 
 class PagamentoViewSet(ModelViewSet):
     queryset = Pagamento.objects.all()
     serializer_class = PagamentoSerializer
+    permission_classes = [IsAuthenticated]
