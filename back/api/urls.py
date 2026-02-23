@@ -6,11 +6,6 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-urlpatterns = [
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-]
-
 router = DefaultRouter()
 
 router.register(r'usuarios', UsuarioViewSet)
@@ -23,6 +18,9 @@ urlpatterns = [
     path('refresh/', TokenRefreshView.as_view(), name='token_refresh'), # Refresh serve para, depois de um determinado período de tempo de inatividade no programa, é solicitado recadastro.
 
     path('', include(router.urls)), #ViewSet
+
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
     path('users/', listar_criar_usuario), #Decorator APIView
     path('propertys/', listar_criar_imovel), #Decorator APIView

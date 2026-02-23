@@ -19,6 +19,26 @@ from .serializers import (
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 
+class UsuarioViewSet(ModelViewSet):
+    queryset = Usuario.objects.all()
+    serializer_class = UsuarioSerializer
+    # permission_classes = [IsAuthenticated]
+
+class ImovelViewSet(ModelViewSet):
+    queryset = Imovel.objects.all()
+    serializer_class = ImovelSerializer
+    # permission_classes = [IsAuthenticated]
+
+class ContratoViewSet(ModelViewSet):
+    queryset = Contrato.objects.all()
+    serializer_class = ContratoSerializer
+    # permission_classes = [IsAuthenticated]
+
+class PagamentoViewSet(ModelViewSet):
+    queryset = Pagamento.objects.all()
+    serializer_class = PagamentoSerializer
+    # permission_classes = [IsAuthenticated]
+
 ################ GENERICS (CLASSES) ################
 
 # Usuario
@@ -263,22 +283,3 @@ def listar_criar_pagamento(request):
 
 #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class UsuarioViewSet(ModelViewSet):
-    queryset = Usuario.objects.all()
-    serializer_class = UsuarioSerializer
-    permission_classes = [IsAuthenticated]
-
-class ImovelViewSet(ModelViewSet):
-    queryset = Imovel.objects.all()
-    serializer_class = ImovelSerializer
-    permission_classes = [IsAuthenticated]
-
-class ContratoViewSet(ModelViewSet):
-    queryset = Contrato.objects.all()
-    serializer_class = ContratoSerializer
-    permission_classes = [IsAuthenticated]
-
-class PagamentoViewSet(ModelViewSet):
-    queryset = Pagamento.objects.all()
-    serializer_class = PagamentoSerializer
-    permission_classes = [IsAuthenticated]
