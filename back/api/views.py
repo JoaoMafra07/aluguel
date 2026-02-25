@@ -44,6 +44,7 @@ class ImovelViewSet(ModelViewSet):
 
     filter_backends = [DjangoFilterBackend]
     filterset_class = ImovelFilter
+
     # permission_classes = [IsAuthenticated]
 
     # def get_queryset(self):
@@ -61,15 +62,19 @@ class ImovelViewSet(ModelViewSet):
 class ContratoViewSet(ModelViewSet):
     queryset = Contrato.objects.all()
     serializer_class = ContratoSerializer
+
     filter_backends = [DjangoFilterBackend]
     filterset_class = ContratoFilter
+
     # permission_classes = [IsAuthenticated]
 
 class PagamentoViewSet(ModelViewSet):
     queryset = Pagamento.objects.all()
     serializer_class = PagamentoSerializer
+
     filter_backends = [DjangoFilterBackend]
     filterset_class = PagamentoFilter
+
     # permission_classes = [IsAuthenticated]
 
 ################ GENERICS (CLASSES) ################

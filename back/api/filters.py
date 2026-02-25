@@ -22,22 +22,22 @@ class ImovelFilter(django_filters.FilterSet):
 class ContratoFilter(django_filters.FilterSet):
     data_inicio = django_filters.DateFilter(field_name='data_inicio', lookup_expr='gte')
     data_fim = django_filters.DateFilter(field_name='data_fim', lookup_expr='lte')
-    valor_min = django_filters.NumberFilter(field_name='valor_aluguel', lookup_expr='gte')
-    valor_max = django_filters.NumberFilter(field_name='valor_aluguel', lookup_expr='lte')
+    valor_min = django_filters.NumberFilter(field_name='valor', lookup_expr='gte')
+    valor_max = django_filters.NumberFilter(field_name='valor', lookup_expr='lte')
 
     class Meta:
         models = Contrato
-        fields = ['data_inicio', 'data_fim', 'valor_aluguel']
+        fields = ['data_inicio', 'data_fim', 'valor']
 
 class PagamentoFilter(django_filters.FilterSet):
     data_min = django_filters.DateFilter(field_name='data_inicio', lookup_expr='gte')
     data_max = django_filters.DateFilter(field_name='data_fim', lookup_expr='lte')
-    valor_min = django_filters.NumberFilter(field_name='valor_aluguel', lookup_expr='gte')
-    valor_max = django_filters.NumberFilter(field_name='valor_aluguel', lookup_expr='lte')
+    status = django_filters.BooleanFilter(field_name='status')
+    contrato = django_filters.NumberFilter(field_name='contrato_id')
 
     class Meta:
-        models = Imovel
-        fields = ['data_inicio', 'data_fim', 'valor_aluguel']
+        models = Pagamento
+        fields = ['data_inicio', 'data_fim', 'status', 'contrato_id']
 # class PagamentoFilter(django_filters.FilterSet):
 #     valor_aluguel = django_filters.NumberFilter(field_name='valor_aluguel', lookup_expr='gte')
 #     data_pagamento = django_filters.DateFilter()
