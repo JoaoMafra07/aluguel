@@ -18,25 +18,58 @@ from .serializers import (
 )
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
+from .filters import *
+from django_filters.rest_framework import DjangoFilterBackend
 
+################ ViewSet Classes ################
 class UsuarioViewSet(ModelViewSet):
     queryset = Usuario.objects.all()
     serializer_class = UsuarioSerializer
+
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = UsuarioFilter
+
     # permission_classes = [IsAuthenticated]
+
+    # def get_queryset(self):
+    #     tipo = self.request.query_params.get('tipo')
+    #     if tipo:
+    #         self.queryset = self.queryset.filter(tipo=tipo)
+
+    #     return self.queryset
 
 class ImovelViewSet(ModelViewSet):
     queryset = Imovel.objects.all()
     serializer_class = ImovelSerializer
+
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ImovelFilter
     # permission_classes = [IsAuthenticated]
+
+    # def get_queryset(self):
+    #     tipo = self.request.query_params.get('tipo').title()
+    #     status = self.request.query_params.get('status').upper()
+
+    #     if tipo:
+    #         self.queryset = self.queryset.filter(tipo=tipo)
+
+    #     if status:
+    #         self.queryset = self.queryset.filter(status=status)
+
+    #     return self.queryset
 
 class ContratoViewSet(ModelViewSet):
     queryset = Contrato.objects.all()
     serializer_class = ContratoSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ContratoFilter
     # permission_classes = [IsAuthenticated]
 
 class PagamentoViewSet(ModelViewSet):
     queryset = Pagamento.objects.all()
     serializer_class = PagamentoSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = PagamentoFilter
     # permission_classes = [IsAuthenticated]
 
 ################ GENERICS (CLASSES) ################
