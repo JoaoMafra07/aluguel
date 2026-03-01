@@ -1,15 +1,28 @@
-import React, { useEffect, useState } from "react"
-import axios from "axios"
+import React, { useEffect, useState } from 'react'
+import axios from 'axios'
 
 export default function HomeUser() {
-    const [user, setUser] = useState([])
+    const [usuariosGerais, setUsuariosGerais] = useState([])
+    const [usuariosFiltrados, setUsuariosFiltrados] = useState([])
     const [password, setPassword] = useState('')
+    const [filtro, setFiltro] = useState('')
     const [nome, setNome] = useState('')
     const [tipo, setTipo] = useState('')
 
     const token = localStorage.getItem('token')
 
-    const listar = async () => {
+    const buscarTodos = async () => {
+        try {
+            const response = await axios.get('http://127.0.0.1:8000/api/usuarios', {
+                headers: { Authorization: `Bearer ${token}` },
+            })
+            setUsuariosGerais(response.data)
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const filtrar = async () => {
         try {
             const response = await axios.get('http://127.0.0.1:8000/api/usuarios', {
                 headers: { Authorization: `Bearer ${token}` },
@@ -18,43 +31,27 @@ export default function HomeUser() {
                     tipo: tipo
                 }
             })
-            setUser(response.data)
+            setUsuariosFiltrados(response.data)
         } catch (error) {
             console.log(error);
         }
     }
 
-    useEffect(() => { listar() }, [])
+    useEffect(() => { buscarTodos() }, [])
 
     return (
-        <div>
+        <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            minHeight: '100vh',
+            width: '100%'
+        }}>
             <h2>Lista de Usuários</h2>
 
-            <div style={{ marginBottom: "20px" }}>
-                <input
-                    type="text"
-                    placeholder="Filtrar por nome..."
-                    value={nome}
-                    onChange={(e) => setNome(e.target.value)}
-                    style={{ marginRight: "10px", padding: "5px" }}
-                />
-
-                <select
-                    value={tipo}
-                    onChange={(e) => setTipo(e.target.value)}
-                    style={{ marginRight: "10px", padding: "5px" }}
-                >
-                    <option value="">Todos os tipos</option>
-                    <option value="LOCADOR">Locador</option>
-                    <option value="LOCATARIO">Locatario</option>
-                </select>
-
-                <button onClick={listar} style={{ padding: "5px 15px" }}>
-                    Filtrar
-                </button>
-            </div>
             {/*Tabela principal */}
-            <table border="1" cellPadding="6" style={{ width: "100%" }}>
+            <table border='1' cellPadding='6' style={{ width: '100%' }}>
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -65,7 +62,7 @@ export default function HomeUser() {
                     </tr>
                 </thead>
                 <tbody>
-                    {user.map((u) => (
+                    {usuariosGerais.map((u) => (
                         <tr key={u.id}>
                             <td>{u.id}</td>
                             <td>{u.nome}</td>
@@ -76,7 +73,73 @@ export default function HomeUser() {
                     ))}
                 </tbody>
             </table>
-            <hr style={{ margin: "20px 0" }} />
+            <hr style={{ margin: '20px 0' }} />
+
+            <div style={{ marginBottom: '20px' }}>
+                <select
+                    value={filtro}
+                    onChange={(e) => {
+                        setFiltro(e.target.value);
+                        setNome('');
+                        setTipo('');
+                        setUsuariosFiltrados([]);
+                    }}
+                    style={{ marginRight: '10px', padding: '5px', fontWeight: 'bold' }}
+                >
+                    <option value=''>Nenhum</option>
+                    <option value='nome'>Filtrar por Nome</option>
+                    <option value='tipo'>Filtrar por Tipo</option>
+                </select>
+
+                {filtro === 'nome' && (
+                    <input
+                        type='text'
+                        placeholder='Digite o nome'
+                        value={nome}
+                        onChange={(e) => setNome(e.target.value)}
+                        style={{ marginRight: '10px', padding: '5px' }}
+                    />
+                )}
+
+                {filtro === 'tipo' && (
+                    <select
+                        value={tipo}
+                        onChange={(e) => setTipo(e.target.value)}
+                        style={{ marginRight: '10px', padding: '5px', fontWeight: 'bold' }}
+                    >
+                        <option value=''>Nenhum</option>
+                        <option value='LOCADOR'>Locador</option>
+                        <option value='LOCATARIO'>Locatário</option>
+                    </select>
+                )}
+
+                <button onClick={filtrar} style={{ padding: '5px 15px' }}>
+                    Pesquisar
+                </button>
+            </div>
+
+            <table border='1' cellPadding='6' style={{ width: '100%' }}>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Telefone</th>
+                        <th>Tipo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {usuariosFiltrados.map((u) => (
+                        <tr key={u.id}>
+                            <td>{u.id}</td>
+                            <td>{u.nome}</td>
+                            <td>{u.email}</td>
+                            <td>{u.telefone}</td>
+                            <td>{u.tipo}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
         </div>
     )
 }
