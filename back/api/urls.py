@@ -12,6 +12,7 @@ router.register(r'usuarios', UsuarioViewSet)
 router.register(r'imoveis', ImovelViewSet)
 router.register(r'contratos', ContratoViewSet)
 router.register(r'pagamentos', PagamentoViewSet)
+# router.register(r'register', RegisterViewSet)
 
 urlpatterns = [
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
@@ -19,8 +20,7 @@ urlpatterns = [
 
     path('', include(router.urls)), #ViewSet
 
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('register/', RegisterViewSet.as_view()),
 
     path('users/', listar_criar_usuario), #Decorator APIView
     path('propertys/', listar_criar_imovel), #Decorator APIView

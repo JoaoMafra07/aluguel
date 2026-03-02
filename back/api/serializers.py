@@ -11,11 +11,11 @@ class RegisterSerializer(serializers.Serializer):
     #campos da tabela AUTH_USER
     username = serializers.CharField()
     email = serializers.EmailField()
-    password = serializers.CharField(write_one=True)
+    password = serializers.CharField(write_only=True)
 
     #campos da tabela Usuario
-    nome = serializers.CharField(required=False, allow_blank=True, default='') # required por padrão já é False
-    telefone = serializers.CharField(required=False, allow_blank=True, default='')
+    nome = serializers.CharField(required=False, allow_blank=True, default="") # required por padrão já é False
+    telefone = serializers.CharField(required=False, allow_blank=True, default="")
     tipo = serializers.ChoiceField(choices=Usuario.TIPO_CHOICES)
 
     def create(self, validated_data):
@@ -40,7 +40,7 @@ class RegisterSerializer(serializers.Serializer):
         user.is_superuser = False
         user.save()
 
-        # Criando usuário na tebala Usuario
+        # Criando usuário na tabela Usuario
         Usuario.objects.create(
             user=user,
             nome=nome if nome else user.username,
