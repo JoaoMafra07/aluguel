@@ -30,8 +30,8 @@ class ContratoFilter(django_filters.FilterSet):
         fields = ['data_inicio', 'data_fim', 'valor']
 
 class PagamentoFilter(django_filters.FilterSet):
-    data_min = django_filters.DateFilter(field_name='data_inicio', lookup_expr='gte')
-    data_max = django_filters.DateFilter(field_name='data_fim', lookup_expr='lte')
+    data_min = django_filters.DateFilter(field_name='data_pagamento', lookup_expr='gte')
+    data_max = django_filters.DateFilter(field_name='data_pagamento', lookup_expr='lte')
     status = django_filters.BooleanFilter(field_name='status')
     contrato = django_filters.NumberFilter(field_name='contrato_id')
 

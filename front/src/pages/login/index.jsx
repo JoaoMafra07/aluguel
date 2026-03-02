@@ -10,7 +10,7 @@ export default function Login(){
 
     const navigate = useNavigate()
 
-    const logar = async ()=>{
+    const logar = async (destino)=>{
         try {
             const response = await axios.post(
                 'http://127.0.0.1:8000/api/token/',
@@ -22,7 +22,8 @@ export default function Login(){
             
             localStorage.setItem('token', response.data.access)
             setMessage("Usuário logado")
-            navigate('/homeuser/')
+
+            navigate(destino)
             
         } catch (error) {
             console.log("Error: ", error);
@@ -56,7 +57,12 @@ export default function Login(){
                     <p>{message}</p>
                 </div>
 
-                <button className="btn_1" onClick={logar}>Enter</button>
+                <div style={{display: 'flex', flexDirection: 'column'}}>
+                    <button className="btn_1" style={{margin: '5px'}} onClick={() => logar('/homeuser')}>Usuários</button>
+                    <button className="btn_1" style={{margin: '5px'}} onClick={() => logar('/imoveluser')}>Imóveis</button>
+                    <button className="btn_1" style={{margin: '5px'}} onClick={() => logar('/contratouser')}>Contratos</button>
+                    <button className="btn_1" style={{margin: '5px'}} onClick={() => logar('/pagamentouser')}>Pagamentos</button>
+                </div>
             </section>
         </div>
     )
