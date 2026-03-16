@@ -2,6 +2,17 @@ from .models import Usuario, Imovel, Contrato, Pagamento
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
+class UsuarioMeSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source="user.username", read_only=True)
+    email = serializers.EmailField(source="user.emai", read_only=True)
+    is_staff = serializers.BooleanField(source="user.is_staff", read_only=True)
+    is_superuser = serializers.BooleanField(source="user.is_superuser", read_only=True)
+    is_active = serializers.BooleanField(source="user.is_active", read_only=True)
+
+    class Meta:
+        model = Usuario
+        fields = ["id", "username", "email", "nome", "telefone", "tipo", "is_staff", "is_superuser", "is_active"]
+
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario

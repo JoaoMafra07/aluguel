@@ -7,24 +7,46 @@ export default function Login(){
     const [user, setUser] = useState('')
     const [password, setPassword] = useState('')
     const [message, setMessage] = useState('')
+    const [loading, setLoading] = useState(false)
 
     const navigate = useNavigate()
 
-    const logar = async (destino)=>{
+    const logar = async (e)=>{
+        e.preventDefault()
+        setMessage("")
+        setLoading(true)
+        
         try {
-            const response = await axios.post(
-                'http://127.0.0.1:8000/api/token/',
+            const response = await axios.post('http://127.0.0.1:8000/api/token/',
                 {
                     username: user,
                     password: password
                 }
             )
-            
-            localStorage.setItem('token', response.data.access)
-            setMessage("Usuário logado")
 
-            navigate(destino)
+            const access = response.data.access
+            localStorage.setItem("token", access)
+            setMessage("Usuário logado")
             
+            const me = await axios.get('http://127.0.0.1:8000/api/usuarios/me/',{
+                headers: {Authorization: `Bearer ${access}`}
+            })
+
+            const {is_superuser, is_staff, is_active}= me.data
+
+            if (!is_active){
+                localStorage.removeItem("token")
+                setMessage("Usuário inativo. Contate o administrador")
+                setLoading(false)
+                return
+            }
+            
+            if (is_staff){
+                navigate("admin/home")
+            } else {
+                navigate("user/home")
+            }
+
         } catch (error) {
             console.log("Error: ", error);
             setMessage("Usuário ou senha inválido...")
@@ -41,7 +63,7 @@ export default function Login(){
                 <input
                     className="caixa"
                     value={user}
-                    onChange={(e)=>{setUser(e.target.value)}} // o "e" significa event
+                    onChange={(e)=>{setUser(e.target.value)}}
                     placeholder="User"
                 />
 
@@ -57,12 +79,7 @@ export default function Login(){
                     <p>{message}</p>
                 </div>
 
-                <div style={{display: 'flex', flexDirection: 'column'}}>
-                    <button className="btn_1" style={{margin: '5px'}} onClick={() => logar('/homeuser')}>Usuários</button>
-                    <button className="btn_1" style={{margin: '5px'}} onClick={() => logar('/imoveluser')}>Imóveis</button>
-                    <button className="btn_1" style={{margin: '5px'}} onClick={() => logar('/contratouser')}>Contratos</button>
-                    <button className="btn_1" style={{margin: '5px'}} onClick={() => logar('/pagamentouser')}>Pagamentos</button>
-                </div>
+                <button className="btn_1" onClick={logar}>Enter</button>
             </section>
         </div>
     )

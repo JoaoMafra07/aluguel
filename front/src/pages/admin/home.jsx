@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 
-export default function HomeUser() {
+export default function HomeAdmin() {
     const [usuariosGerais, setUsuariosGerais] = useState([])
     const [usuariosFiltrados, setUsuariosFiltrados] = useState([])
     const [password, setPassword] = useState('')
@@ -51,7 +51,7 @@ export default function HomeUser() {
             <h2>Lista de Usuários</h2>
 
             {/*Tabela principal */}
-            <table border='1' cellPadding='6' style={{ width: '100%' }}>
+            <table border='1' cellPadding='6' style={{ maxWidth: '100%', minWidth: '80%' }}>
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -118,7 +118,7 @@ export default function HomeUser() {
                 </button>
             </div>
 
-            <table border='1' cellPadding='6' style={{ width: '100%' }}>
+            <table border='1' cellPadding='6' style={{ maxWidth: '100%', minWidth: '80%' }}>
                 <thead>
                     <tr>
                         <th>ID</th>

@@ -1,15 +1,15 @@
 from django.shortcuts import render
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import *
-from rest_framework.decorators import api_view
 from .serializers import *
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .filters import *
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.decorators import action, permission_classes
 
 ################ ViewSet Classes ################
 class UsuarioViewSet(ModelViewSet):
@@ -21,12 +21,46 @@ class UsuarioViewSet(ModelViewSet):
 
     # permission_classes = [IsAuthenticated]
 
-    # def get_queryset(self):
-    #     tipo = self.request.query_params.get('tipo')
-    #     if tipo:
-    #         self.queryset = self.queryset.filter(tipo=tipo)
+    def get_queryset(self):
+        qs = super().get_queryset()
 
-    #     return self.queryset
+        if self.request.user.is_staff:
+            return qs
+        
+        return qs.filter(user=self.request.user)
+    
+    def get_serializer_class(self):
+        if self.action == "me":
+            return UsuarioMeSerializer
+        
+        return super().get_serializer_class()
+
+    @action(
+        detail=False,
+        methods=['get'],
+        url_path="me",
+        permission_classes=[IsAuthenticated]
+    )
+    def me (self, request):
+        usuario = Usuario.objects.filter(user=request.user).first()
+        
+        if not usuario:
+            return Response({"detail": "Perfil de usuário não encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = self.get_serializer(usuario)
+        return Response(serializer.data)
+    
+    @action(
+        detail=False,
+        methods='get',
+        url_path="tipo-choices",
+        permission_classes=[AllowAny]
+    )
+    def tipo_choices(self, request):
+        return Response([
+            {"value": v, "label": l}
+            for v, l in Usuario.TIPO_CHOICES
+        ])
 
 class RegisterViewSet(APIView):
     permission_classes=[AllowAny]
@@ -79,247 +113,26 @@ class PagamentoViewSet(ModelViewSet):
 
     # permission_classes = [IsAuthenticated]
 
-################ GENERICS (CLASSES) ################
+class MeView(RetrieveAPIView):
+    serializer_class = UsuarioMeSerializer
 
-# Usuario
-# class UsuarioListCreateAPIView(ListCreateAPIView):
-#     queryset = Usuario.objects.all()
-#     serializer_class = UsuarioSerializer
+    def get_object(self):
+        perfil, created = Usuario.objects.get_or_create(
+            user=self.request.user,
+            defaults={
+                "nome": self.request.user.username,
+                "email": self.request.user.email,
+                "tipo": "LOCATARIO"
+            }
+        )
+        return perfil
 
-# class UsuarioDetailView(RetrieveUpdateDestroyAPIView):
-#     queryset = Usuario.objects.all()
-#     serializer_class = UsuarioSerializer
-
-# Imovel
-# class ImovelListCreateAPIView(ListCreateAPIView):
-#     queryset = Imovel.objects.all()
-#     serializer_class = ImovelSerializer
-
-# class ImovelDetailView(RetrieveUpdateDestroyAPIView):
-#     queryset = Imovel.objects.all()
-#     serializer_class = ImovelSerializer
-
-# Contrato
-# class ContratoListCreateAPIView(ListCreateAPIView):
-#     queryset = Contrato.objects.all()
-#     serializer_class = ContratoSerializer
-
-# class ContratoDetailView(RetrieveUpdateDestroyAPIView):
-#     queryset = Contrato.objects.all()
-#     serializer_class = ContratoSerializer
-
-# # Pagamento
-# class PagamentoListCreateAPIView(ListCreateAPIView):
-#     queryset = Pagamento.objects.all()
-#     serializer_class = PagamentoSerializer
-
-# class PagamentoDetailView(RetrieveUpdateDestroyAPIView):
-#     queryset = Pagamento.objects.all()
-#     serializer_class = PagamentoSerializer
-
-################ DECORATORS (FUNÇÕES) ################
-
-@api_view(['GET', 'POST'])
-def listar_criar_usuario(request):
-    if request.method == 'GET':
-        queryset = Usuario.objects.all()
-        serializer = UsuarioSerializer(queryset, many=True)
-        return Response(serializer.data)
-    
-    if request.method == 'POST':
-        serializer = UsuarioSerializer(data=request.data)
-
+class RegisterView(APIView):
+    permission_classes = [AllowAny]
+    def post(self, request):
+        serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save() 
-
-            return Response({"Mensagem": "Usuário criado com sucesso"}, status=status.HTTP_201_CREATED) 
+            serializer.save()
+            return Response({"detail": "Usuário criado com sucesso"}, status=status.HTTP_201_CREATED)
         
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(['GET', 'POST'])
-def listar_criar_imovel(request):
-    if request.method == 'GET':
-        queryset = Imovel.objects.all()
-        serializer = ImovelSerializer(queryset, many=True)
-        return Response(serializer.data)
-    
-    if request.method == 'POST':
-        serializer = ImovelSerializer(data=request.data)
-
-        if serializer.is_valid():
-            serializer.save() 
-
-            return Response({"Mensagem": "Imóvel criado com sucesso"}, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(['GET', 'POST'])
-def listar_criar_contrato(request):
-    if request.method == 'GET':
-        queryset = Contrato.objects.all()
-        serializer = ContratoSerializer(queryset, many=True)
-        return Response(serializer.data)
-    
-    if request.method == 'POST':
-        serializer = ContratoSerializer(data=request.data)
-
-        if serializer.is_valid():
-            serializer.save() 
-
-            return Response({"Mensagem": "Contrato criado com sucesso"}, status=status.HTTP_201_CREATED) 
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(['GET', 'POST'])
-def listar_criar_pagamento(request):
-    if request.method == 'GET':
-        queryset = Pagamento.objects.all()
-        serializer = PagamentoSerializer(queryset, many=True)
-        return Response(serializer.data)
-    
-    if request.method == 'POST':
-        serializer = PagamentoSerializer(data=request.data)
-
-        if serializer.is_valid():
-            serializer.save() 
-
-            return Response({"Mensagem": "Pagamento criado com sucesso"}, status=status.HTTP_201_CREATED) 
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-############################################ Via APIView ############################################
-# class UsuarioListCreateAPIView(APIView):
-    
-#     def get(self, request):
-#         usuarios = Usuario.objects.all()
-#         serializer = UsuarioSerializer(usuarios, many=True)
-#         return Response(serializer.data)
-    
-#     def post(self, request):
-#         serializer = UsuarioSerializer(data=request.data)
-        
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-# class UsuarioDetailView(APIView):
-
-#     def get_object(self, pk):
-#         return Usuario.objects.get(pk=pk)
-    
-#     def delete(self, request, pk):
-#         usuario = self.get_object(pk)
-#         usuario.delete()
-#         return Response(status=status.HTTP_204_NO_CONTENT)
-    
-#     def put(self, request, pk):
-#         usuario = self.get_object(pk)
-#         serializer = UsuarioSerializer(usuario, data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_200_OK)
-        
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-# class ImovelListCreateAPIView(APIView):
-#     def get(self, request):
-#         imoveis = Imovel.objects.all()
-#         serializer = ImovelSerializer(imoveis, many=True)
-#         return Response(serializer.data)
-    
-#     def post(self, request):
-#         serializer = ImovelSerializer(data=request.data)
-        
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-# class ImovelDetailView(APIView):
-#     def get_object(self, pk):
-#         return Imovel.objects.get(pk=pk)
-    
-#     def delete(self, request, pk):
-#         imovel = self.get_object(pk)
-#         imovel.delete()
-#         return Response(status=status.HTTP_204_NO_CONTENT)
-    
-#     def put(self, request, pk):
-#         imovel = self.get_object(pk)
-#         serializer = ImovelSerializer(imovel, data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_200_OK)
-        
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        
-# class ContratoListCreateAPIView(APIView):
-#     def get(self, request):
-#         contratos = Contrato.objects.all()
-#         serializer = ContratoSerializer(contratos, many=True)
-#         return Response(serializer.data)
-    
-#     def post(self, request):
-#         serializer = ContratoSerializer(data=request.data)
-        
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-# class ContratoDetailView(APIView):
-#     def get_object(self, pk):
-#         return Contrato.objects.get(pk=pk)
-    
-#     def delete(self, request, pk):
-#         contrato = self.get_object(pk)
-#         contrato.delete()
-#         return Response(status=status.HTTP_204_NO_CONTENT)
-    
-#     def put(self, request, pk):
-#         contrato = self.get_object(pk)
-#         serializer = ContratoSerializer(contrato, data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_200_OK)
-
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-# class PagamentoListCreateAPIView(APIView):
-#     def get(self, request):
-#         pagamentos = Pagamento.objects.all()
-#         serializer = PagamentoSerializer(pagamentos, many=True)
-#         return Response(serializer.data)
-    
-#     def post(self, request):
-#         serializer = PagamentoSerializer(data=request.data)
-        
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-# class PagamentoDetailView(APIView):
-#     def get_object(self, pk):
-#         return Pagamento.objects.get(pk=pk)
-    
-#     def delete(self, request, pk):
-#         pagamento = self.get_object(pk)
-#         pagamento.delete()
-#         return Response(status=status.HTTP_204_NO_CONTENT)
-    
-#     def put(self, request, pk):
-#         pagamento = self.get_object(pk)
-#         serializer = PagamentoSerializer(pagamento, data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_200_OK)
-
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+        return Response({"detail": "Erro ao criar usuário"}, status=status.HTTP_400_BAD_REQUEST)
