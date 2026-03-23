@@ -1,17 +1,24 @@
-from .models import Usuario, Imovel, Contrato, Pagamento
-from django.contrib.auth.models import User
 from rest_framework import serializers
+from django.contrib.auth.models import User
+from .models import Usuario, Imovel, Contrato, Pagamento
 
 class UsuarioMeSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source="user.username", read_only=True)
-    email = serializers.EmailField(source="user.emai", read_only=True)
+    email = serializers.EmailField(source="user.email", read_only=True)
+    
     is_staff = serializers.BooleanField(source="user.is_staff", read_only=True)
     is_superuser = serializers.BooleanField(source="user.is_superuser", read_only=True)
     is_active = serializers.BooleanField(source="user.is_active", read_only=True)
 
     class Meta:
         model = Usuario
-        fields = ["id", "username", "email", "nome", "telefone", "tipo", "is_staff", "is_superuser", "is_active"]
+        fields = [
+            "id", "username", "email", "nome", "telefone", 
+            "tipo", "is_staff", "is_superuser", "is_active"
+            ]
+    
+
+
 
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
@@ -19,23 +26,22 @@ class UsuarioSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class RegisterSerializer(serializers.Serializer):
-    #campos da tabela AUTH_USER
+    # campos da tabela AUTH_USER
     username = serializers.CharField()
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
-
-    #campos da tabela Usuario
-    nome = serializers.CharField(required=False, allow_blank=True, default="") # required por padrão já é False
+    # campos da tabela Usuários
+    nome = serializers.CharField(required=False, allow_blank=True, default="")
     telefone = serializers.CharField(required=False, allow_blank=True, default="")
     tipo = serializers.ChoiceField(choices=Usuario.TIPO_CHOICES)
 
     def create(self, validated_data):
         nome = validated_data.get('nome', '')
         telefone = validated_data.get('telefone', '')
-        tipo = validated_data['tipo'] # Está entre colchetes pq não eh um CharField
+        tipo = validated_data['tipo']
         email = validated_data['email']
 
-        #Criando usuário na tabela auth_user
+        # Ciando usuário na tabela AUTH_USER
         user = User.objects.create_user(
             username=validated_data['username'],
             email=email,
@@ -46,20 +52,20 @@ class RegisterSerializer(serializers.Serializer):
             user.is_staff = True
         else:
             user.is_staff = False
-            
+
         user.is_active = True
         user.is_superuser = False
         user.save()
 
-        # Criando usuário na tabela Usuario
+        # Criando usuári na tabela Usuário
         Usuario.objects.create(
             user=user,
-            nome=nome if nome else user.username,
+            nome= nome if nome else user.username,
             email=email,
             telefone=telefone,
             tipo=tipo
         )
-    
+
         return user
 
 class ImovelSerializer(serializers.ModelSerializer):
@@ -71,8 +77,9 @@ class ContratoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contrato
         fields = '__all__'
-    
+
 class PagamentoSerializer(serializers.ModelSerializer):
-    class Meta:
+    class Meta: 
         model = Pagamento
         fields = '__all__'
+

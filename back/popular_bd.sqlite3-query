@@ -1,11 +1,15 @@
--- database: ./db.sqlite3
+INSERT INTO api_usuario (nome, email, telefone, tipo) VALUES
+('Carlos Silva', 'carlos.silva@email.com', '11999990001', 'LOCADOR'),
+('Ana Souza', 'ana.souza@email.com', '11999990002', 'LOCADOR'),
+('Marcos Lima', 'marcos.lima@email.com', '11999990003', 'LOCADOR'),
+('Juliana Pereira', 'juliana.pereira@email.com', '11999990004', 'LOCATARIO'),
+('Rafael Costa', 'rafael.costa@email.com', '11999990005', 'LOCATARIO'),
+('Fernanda Alves', 'fernanda.alves@email.com', NULL, 'LOCATARIO'),
+('Bruno Rocha', 'bruno.rocha@email.com', '11999990007', 'LOCADOR'),
+('Patrícia Gomes', 'patricia.gomes@email.com', '11999990008', 'LOCATARIO'),
+('Lucas Martins', 'lucas.martins@email.com', NULL, 'LOCATARIO'),
+('Camila Ribeiro', 'camila.ribeiro@email.com', '11999990010', 'LOCADOR');
 
--- Use the ▷ button in the top right corner to run the entire file.
-INSERT INTO api_usuario (id, nome, email, telefone, tipo) VALUES
-(1, 'João', 'joao@gmail.com', '(19) 99999-9999', 'LOCADOR'),
-(2, 'Laurindo', 'lauro@gmail.com', '3246856957', 'LOCADOR'),
-(3, 'Marisnaldo', 'maris@gmail.com', '9845745732', 'LOCADOR'),
-(4, 'Nicolas', 'nico@gmail.com', '(19) 88888-8888', 'LOCATARIO');
 
 INSERT INTO api_imovel (titulo, tipo, valor_aluguel, status, locador_id) VALUES
 ('Apartamento Centro', 'Apartamento', 1500.00, 'DISPONIVEL', 1),

@@ -1,57 +1,47 @@
-import React, { useEffect, useState } from 'react'
-import axios from 'axios'
+import React, { useEffect, useState } from "react"
+import axios from "axios"
 
 export default function HomeAdmin() {
-    const [usuariosGerais, setUsuariosGerais] = useState([])
-    const [usuariosFiltrados, setUsuariosFiltrados] = useState([])
+    const [user, setUser] = useState([])
     const [password, setPassword] = useState('')
-    const [filtro, setFiltro] = useState('')
     const [nome, setNome] = useState('')
-    const [tipo, setTipo] = useState('')
+    const [lista, setLista] = useState([])
 
     const token = localStorage.getItem('token')
 
-    const buscarTodos = async () => {
+    const listar = async () => {
         try {
-            const response = await axios.get('http://127.0.0.1:8000/api/usuarios', {
-                headers: { Authorization: `Bearer ${token}` },
+            const response = await axios.get('http://localhost:8000/api/usuarios', {
+                headers: { Authorization: `Bearer ${token}` }
             })
-            setUsuariosGerais(response.data)
+            // console.log("Lista de usuários: ", response.data); 
+            setUser(response.data)
+
         } catch (error) {
             console.log(error);
         }
     }
 
-    const filtrar = async () => {
+    const pesquisar = async () => {
         try {
-            const response = await axios.get('http://127.0.0.1:8000/api/usuarios', {
-                headers: { Authorization: `Bearer ${token}` },
-                params: {
-                    nome: nome,
-                    tipo: tipo
-                }
-            })
-            setUsuariosFiltrados(response.data)
+            const response = await axios.get(`http://127.0.0.1:8000/api/usuarios?nome=${encodeURIComponent(nome)}`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            )
+            setLista(response.data)
         } catch (error) {
             console.log(error);
         }
+
     }
 
-    useEffect(() => { buscarTodos() }, [])
+    useEffect(() => { listar() }, [])
 
     return (
-        <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            minHeight: '100vh',
-            width: '100%'
-        }}>
+        <div>
+            <h1>Página Administrador</h1>
             <h2>Lista de Usuários</h2>
-
             {/*Tabela principal */}
-            <table border='1' cellPadding='6' style={{ maxWidth: '100%', minWidth: '80%' }}>
+            <table border="1" cellPadding="6" style={{ width: "100%" }}>
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -62,7 +52,7 @@ export default function HomeAdmin() {
                     </tr>
                 </thead>
                 <tbody>
-                    {usuariosGerais.map((u) => (
+                    {user.map((u) => (
                         <tr key={u.id}>
                             <td>{u.id}</td>
                             <td>{u.nome}</td>
@@ -73,52 +63,24 @@ export default function HomeAdmin() {
                     ))}
                 </tbody>
             </table>
-            <hr style={{ margin: '20px 0' }} />
+            <hr style={{ margin: "20px 0" }} />
 
-            <div style={{ marginBottom: '20px' }}>
-                <select
-                    value={filtro}
-                    onChange={(e) => {
-                        setFiltro(e.target.value);
-                        setNome('');
-                        setTipo('');
-                        setUsuariosFiltrados([]);
-                    }}
-                    style={{ marginRight: '10px', padding: '5px', fontWeight: 'bold' }}
-                >
-                    <option value=''>Nenhum</option>
-                    <option value='nome'>Filtrar por Nome</option>
-                    <option value='tipo'>Filtrar por Tipo</option>
-                </select>
-
-                {filtro === 'nome' && (
+            <div>
+                Pesquisar
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                }}>
                     <input
-                        type='text'
-                        placeholder='Digite o nome'
+                        style={{ padding: '5px' }}
+                        placeholder="Digite um nome"
                         value={nome}
                         onChange={(e) => setNome(e.target.value)}
-                        style={{ marginRight: '10px', padding: '5px' }}
+                        type="text"
                     />
-                )}
-
-                {filtro === 'tipo' && (
-                    <select
-                        value={tipo}
-                        onChange={(e) => setTipo(e.target.value)}
-                        style={{ marginRight: '10px', padding: '5px', fontWeight: 'bold' }}
-                    >
-                        <option value=''>Nenhum</option>
-                        <option value='LOCADOR'>Locador</option>
-                        <option value='LOCATARIO'>Locatário</option>
-                    </select>
-                )}
-
-                <button onClick={filtrar} style={{ padding: '5px 15px' }}>
-                    Pesquisar
-                </button>
-            </div>
-
-            <table border='1' cellPadding='6' style={{ maxWidth: '100%', minWidth: '80%' }}>
+                    <button onClick={pesquisar} style={{ fontSize: '11px', padding: '5px' }}>Ok</button>
+                </div>
+                <table border="1" cellPadding="6" style={{ width: "100%" }}>
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -129,7 +91,7 @@ export default function HomeAdmin() {
                     </tr>
                 </thead>
                 <tbody>
-                    {usuariosFiltrados.map((u) => (
+                    {lista.map((u) => (
                         <tr key={u.id}>
                             <td>{u.id}</td>
                             <td>{u.nome}</td>
@@ -140,6 +102,7 @@ export default function HomeAdmin() {
                     ))}
                 </tbody>
             </table>
+            </div>
         </div>
     )
 }
