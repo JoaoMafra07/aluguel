@@ -135,8 +135,8 @@ class DashboardViewSet(ModelViewSet):
         .select_related('imovel', 'locador', 'locatario')
         .order_by('-id')[:5]
         .values('id', 'data_inicio', 'data_fim', 'valor',
-                'imovel_id', 'imovel_titulo', 'locador_nome', 
-                'locatario_nome'
+                'imovel_id', 'imovel__titulo', 'locador__nome', 
+                'locatario__nome'
                 )
         )
 
