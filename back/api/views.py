@@ -10,6 +10,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .filters import *
 from django_filters.rest_framework import DjangoFilterBackend
+import pandas as pd
 
 class UsuarioViewSet(ModelViewSet):
     queryset = Usuario.objects.all()
@@ -157,4 +158,162 @@ class DashboardViewSet(ModelViewSet):
             "imoveis_destaque": list(imoveis_destaque),
             "contratos_recentes": list(contratos_recentes)
         }
+        )
+    
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def importar_imoveis(request):
+    arquivo = request.FILES.get('file')
+
+    if not arquivo:
+        return Response(
+            {"detail": "Nenhum arquivo enviado"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    try:
+        df = pd.read_excel(arquivo)
+        colunas_esperadas = ["titulo", "tipo", "valor_aluguel", "status", "locador_id"]
+        for coluna in colunas_esperadas:
+            if coluna not in df.columns:
+                return Response(
+                    {"detail":f"Coluna {coluna} obrigatória."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        for _, row in df.iterrows():
+            locador_id = int(row["locador_id"])
+
+            if not Usuario.objects.filter(id=locador_id).exists():
+                return Response(
+                {"detail":f"Locador ID: {locador_id} não existe."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+            Imovel.objects.create(
+                titulo=row["titulo"],
+                tipo=row["tipo"],
+                valor_aluguel=row["valor_aluguel"],
+                status=row["status"],
+                locador_id=row["locador_id"]
+            )
+
+        return Response(
+            {"detail": "Importação concluída com sucesso..."},
+            status=status.HTTP_201_CREATED
+        )
+
+    except Exception as e:
+        return Response(
+            {"detail": f"Erro ao importar o arquivo"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def importar_contratos(request):
+    arquivo = request.FILES.get('file')
+
+    if not arquivo:
+        return Response(
+            {"detail": "Nenhum arquivo enviado."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    try:
+        df = pd.read_excel(arquivo)
+        colunas_esperadas = ["data_inicio", "data_fim", "valor", "imovel_id", "locador_id", "locatario_id"]
+        for coluna in colunas_esperadas:
+            if coluna not in df.columns:
+                return Response(
+                    {"detail": f"Coluna {coluna} obrigatória."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+        for _, row in df.iterrows():
+            imovel_id = int(row["imovel_id"])
+            locador_id = int(row["locador_id"])
+            locatario_id = int(row["locatario_id"])
+
+            if not Imovel.objects.filter(id=imovel_id).exists():
+                return Response(
+                    {"detail": f"Imovel ID: {imovel_id} não existe..."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            if not Usuario.objects.filter(id=locador_id).exists():
+                return Response(
+                    {"detail": f"Locador ID: {locador_id} não existe..."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            if not Usuario.objects.filter(id=locatario_id).exists():
+                return Response(
+                    {"detail": f"Locador ID: {locatario_id} não existe..."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            Contrato.objects.create(
+                data_inicio=row["data_inicio"],
+                data_fim=row["data_fim"],
+                valor=row["valor"],
+                locador_id=row["locador_id"],
+                locatario_id=row["locatario_id"],
+                imovel_id=row["imovel_id"]
+            )
+        return Response(
+            {"detail": "Importação concluída com sucesso..."},
+            status=status.HTTP_201_CREATED
+        )
+    
+    except Exception as e:
+        return Response(
+            {"detail": "Erro ao importar o arquivo"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def importar_pagamentos(request):
+    arquivo = request.FILES.get('file')
+
+    if not arquivo:
+        return Response(
+            {"detail": "Nenhum arquivo enviado."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    try:
+        df = pd.read_excel(arquivo)
+        colunas_esperadas = ["data_pagamento", "valor", "status", "contrato_id"]
+        for coluna in colunas_esperadas:
+            if coluna not in df.columns:
+                return Response(
+                    {"detail": f"Coluna {coluna} obrigatória."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+        for _, row in df.iterrows():
+            contrato_id = int(row["contrato_id"])
+
+            if not Contrato.objects.filter(id=contrato_id).exists():
+                return Response(
+                    {"detail": f"Contrato ID: {contrato_id} não existe..."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            Pagamento.objects.create(
+                data_pagamento=row["data_pagamento"],
+                valor=row["valor"],
+                status=row["status"],
+                contrato_id=row["contrato_id"]
+            )
+        return Response(
+            {"detail": "Importação concluída com sucesso..."},
+            status=status.HTTP_201_CREATED
+        )
+    
+    except Exception as e:
+        return Response(
+            {"detail": "Erro ao importar o arquivo."},
+            status=status.HTTP_400_BAD_REQUEST
         )

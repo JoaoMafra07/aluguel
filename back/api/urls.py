@@ -20,5 +20,8 @@ urlpatterns = [
 
     path('register/', RegisterViewSet.as_view()),
 
+    path('importar_imoveis/', importar_imoveis),
+    path('importar_contratos/', importar_contratos),
+
     path('', include(router.urls))
 ]
