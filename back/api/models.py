@@ -8,9 +8,9 @@ class Usuario(models.Model):
     ]
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='perfil')
     nome = models.CharField(max_length=100)
-    email = models.EmailField()
+    email = models.EmailField(max_length=255)
     telefone = models.CharField(max_length=20, blank=True, null=True)
-    tipo = models.CharField(choices=TIPO_CHOICES)
+    tipo = models.CharField(max_length=10,choices=TIPO_CHOICES)
 
     def __str__(self):
         return self.nome
@@ -44,7 +44,7 @@ class Contrato(models.Model):
 class Pagamento(models.Model):
     data_pagamento = models.DateField()
     valor = models.DecimalField(max_digits=10, decimal_places=2)
-    status = models.BooleanField()
+    status = models.BooleanField(default=False)
     contrato = models.ForeignKey(Contrato, on_delete=models.CASCADE, related_name='pagamentos')
 
     def __str__(self):
